@@ -1,0 +1,71 @@
+class CardinalVector {
+    public final int x;
+    public final int y;
+    public final String direction;
+
+    private final String rotateRightDirection;
+    private final String rotateLeftDirection;
+
+    private final static Map<String, CardinalVector> cardinalDirections = Map.of(
+            "N", new CardinalVector("N", 0, 1, "E", "W"),
+            "E", new CardinalVector("E", 1, 0, "S", "N"),
+            "S", new CardinalVector("S", 0, -1, "W", "E"),
+            "W", new CardinalVector("W", -1, 0, "N", "S"));
+
+    private CardinalVector(String direction, int x, int y, 
+                           String rotateRightDirection, String rotateLeftDirection) {
+        this.direction = direction;
+        this.x = x;
+        this.y = y;
+        this.rotateRightDirection = rotateRightDirection;
+        this.rotateLeftDirection = rotateLeftDirection;
+    }
+
+    public static CardinalVector of(String direction) {
+        return cardinalDirections.get(direction);
+    }
+
+    public CardinalVector rotated(String rotationDirection) {
+        return rotationDirection.equals("R") ? of(rotateRightDirection) 
+                                             : of(rotateLeftDirection);
+    }
+}
+@ParameterizedTest
+@MethodSource("direction_expectedX_expectedY")
+void of_direction_expectedX_expectedY(String direction, int expectedX, int expectedY) {
+    CardinalVector north = CardinalVector.of(direction);
+    assertThat(north.x).isEqualTo(expectedX);
+    assertThat(north.y).isEqualTo(expectedY);
+
+}
+
+static Stream<Arguments> direction_expectedX_expectedY() {
+    return Stream.of(
+            arguments("N", 0, 1),
+            arguments("E", 1, 0),
+            arguments("S", 0, -1),
+            arguments("W", -1, 0)
+    );
+}
+@ParameterizedTest
+@MethodSource("fromDirection_rotationDirection_expectedDirection")
+void rotated_fromDirection_rotationDirection_expectedDirection(String fromDirection,
+                                                               String rotationDirection,
+                                                               String expectedDirection) {
+    CardinalVector rotatedDirection = CardinalVector.of(fromDirection)
+                                                    .rotated(rotationDirection);
+    assertThat(rotatedDirection).isEqualTo(CardinalVector.of(expectedDirection));
+}
+
+static Stream<Arguments> fromDirection_rotationDirection_expectedDirection() {
+    return Stream.of(
+            arguments("N", "R", "E"),
+            arguments("N", "L", "W"),
+            arguments("E", "R", "S"),
+            arguments("E", "L", "N"),
+            arguments("S", "R", "W"),
+            arguments("S", "L", "E"),
+            arguments("W", "R", "N"),
+            arguments("W", "L", "S")
+    );
+}
